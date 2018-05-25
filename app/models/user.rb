@@ -111,6 +111,14 @@ class User < ApplicationRecord
     self.activation_token = User.new_token
     self.activation_digest = User.digest(activation_token)
   end
+
+  def self.search(search)
+    if search
+      User.where(['name LIKE ?', "%#{search}%"])
+    else
+      User.all
+    end
+  end
 end
 
 
