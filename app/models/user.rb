@@ -10,7 +10,11 @@ class User < ApplicationRecord
 
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
-  
+
+  has_many :favorites, foreign_key: "from_user_id", dependent: :destroy
+  has_many :favorite_microposts, class_name:  "Micropost",
+                                 through: :favorites,
+                                 source: :to_micropost
 
 	attr_accessor :remember_token, :activation_token, :reset_token
   before_save :downcase_email
@@ -83,8 +87,12 @@ class User < ApplicationRecord
   def feed
     following_ids = "SELECT followed_id FROM relationships
                      WHERE follower_id = :user_id"
+
+    favorite_ids = "SELECT to_micropost_id FROM favorites
+                     WHERE from_user_id = :user_id"
+
     Micropost.where("user_id IN (#{following_ids})
-                     OR user_id = :user_id", user_id: id)
+                     OR user_id = :user_id OR id IN (#{favorite_ids})", user_id: id)
   end
 
   def follow(other_user)
@@ -100,25 +108,37 @@ class User < ApplicationRecord
     following.include?(other_user)
   end
 
+  def favorite(micropost)
+    favorites.create(to_micropost_id: micropost.id)
+  end
+
+  def cancel_favorite(micropost)
+    favorites.find_by(to_micropost_id: micropost.id).destroy
+  end
+
+  def favorite?(micropost)
+    favorite_microposts.include?(micropost)
+  end
+
   private
-  # メールアドレスを全て小文字にする
-  def downcase_email
-    self.email = email.downcase
-  end
-
-  # 有効化トークンとダイジェストを作成および代入する
-  def create_activation_digest
-    self.activation_token = User.new_token
-    self.activation_digest = User.digest(activation_token)
-  end
-
-  def self.search(search)
-    if search
-      User.where(['name LIKE ?', "%#{search}%"])
-    else
-      User.all
+    # メールアドレスを全て小文字にする
+    def downcase_email
+      self.email = email.downcase
     end
-  end
+
+    # 有効化トークンとダイジェストを作成および代入する
+    def create_activation_digest
+      self.activation_token = User.new_token
+      self.activation_digest = User.digest(activation_token)
+    end
+
+    def self.search(search)
+      if search
+        User.where(['name LIKE ?', "%#{search}%"])
+      else
+        User.all
+      end
+    end
 end
 
 

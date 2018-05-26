@@ -12,4 +12,11 @@
                                        data: { confirm: "You sure?" } %>
     <% end %>
   </span>
+  <span class="favoriated">
+    <%= micropost.favorites.count %> user favoriate this post.
+  </span>
+
+  <div id="favorite_form">
+    <%= render "favorites/favorite_form", {micropost: micropost} %>
+  </div>
 </li>

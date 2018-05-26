@@ -12,4 +12,15 @@
     </strong>
     followers
   </a>
+  <strong id="favorites" class="stat">
+    <%= @user.favorites.count %>
+  </strong>
+  favorites
+
+  <strong id="favorites" class="stat">
+    <% total = 0 %>
+    <% @user.microposts.each{|micropost| total += micropost.favorites.count} %>
+    <%= total %>
+  </strong>
+  favorited
 </div>

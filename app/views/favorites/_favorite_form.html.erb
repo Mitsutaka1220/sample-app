@@ -1,0 +1,11 @@
+<% if current_user.favorite?(micropost) %>
+  <%= form_for(current_user.favorites.find_by(to_micropost_id: micropost.id),
+           html: { method: :delete }, remote: true) do |f| %>
+  <%= f.submit "Cancel favorite", class: "btn btn-danger btn-xs" %>
+<% end %>
+<% else %>
+  <%= form_for(micropost.favorites.build, remote: true) do |f| %>
+    <div><%= hidden_field_tag :to_micropost_id, micropost.id %></div>
+    <%= f.submit "Favolite!", class: "btn btn-primary btn-xs" %>
+  <% end %>
+<% end %>
